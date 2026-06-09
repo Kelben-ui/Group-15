@@ -1,0 +1,131 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+@import 'shadcn/tailwind.css';
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --font-heading: var(--font-sans);
+  --font-sans: var(--font-geist-sans), 'Geist Fallback';
+  --font-mono: var(--font-geist-mono), 'Geist Mono Fallback';
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --color-foreground: var(--foreground);
+  --color-background: var(--background);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+/* LearnBridge Design System */
+:root {
+  --background: #f7f9fc;
+  --foreground: #1f2933;
+  --card: #ffffff;
+  --card-foreground: #1f2933;
+  --popover: #ffffff;
+  --popover-foreground: #1f2933;
+  --primary: #102a43;
+  --primary-foreground: #ffffff;
+  --secondary: #00a6a6;
+  --secondary-foreground: #ffffff;
+  --muted: #e5e7eb;
+  --muted-foreground: #666666;
+  --accent: #f4a261;
+  --accent-foreground: #ffffff;
+  --destructive: #dc3545;
+  --border: #e5e7eb;
+  --input: #ffffff;
+  --ring: #00a6a6;
+  --chart-1: #102a43;
+  --chart-2: #00a6a6;
+  --chart-3: #f4a261;
+  --chart-4: #f59e0b;
+  --chart-5: #8b5cf6;
+  --radius: 0.75rem;
+  --sidebar: #102a43;
+  --sidebar-foreground: #ffffff;
+  --sidebar-primary: #00a6a6;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #00a6a6;
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: rgba(255,255,255,0.12);
+  --sidebar-ring: #00a6a6;
+}
+
+.dark {
+  --background: #0f0f1e;
+  --foreground: #f0f0f5;
+  --card: #1a1a2e;
+  --card-foreground: #f0f0f5;
+  --popover: #1a1a2e;
+  --popover-foreground: #f0f0f5;
+  --primary: #3b82f6;
+  --primary-foreground: #0f0f1e;
+  --secondary: #10b981;
+  --secondary-foreground: #0f0f1e;
+  --muted: #374151;
+  --muted-foreground: #9ca3af;
+  --accent: #f97316;
+  --accent-foreground: #0f0f1e;
+  --destructive: #ef4444;
+  --border: #2d2d40;
+  --input: #1a1a2e;
+  --ring: #3b82f6;
+  --chart-1: #3b82f6;
+  --chart-2: #10b981;
+  --chart-3: #f97316;
+  --chart-4: #eab308;
+  --chart-5: #a78bfa;
+  --sidebar: #1a1a2e;
+  --sidebar-foreground: #f0f0f5;
+  --sidebar-primary: #3b82f6;
+  --sidebar-primary-foreground: #0f0f1e;
+  --sidebar-accent: #10b981;
+  --sidebar-accent-foreground: #0f0f1e;
+  --sidebar-border: #2d2d40;
+  --sidebar-ring: #3b82f6;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  html {
+    @apply font-sans;
+  }
+}
