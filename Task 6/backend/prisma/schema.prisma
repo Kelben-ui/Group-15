@@ -1,0 +1,162 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  LEARNER
+  INSTRUCTOR
+  PARENT
+  ADMIN
+}
+
+enum CourseLevel {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  password  String
+  role      Role     @default(LEARNER)
+  avatarUrl String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  coursesCreated Course[]     @relation("InstructorCourses")
+  enrollments    Enrollment[] @relation("LearnerEnrollments")
+  progress       Progress[]   @relation("LearnerProgress")
+  quizResults    QuizResult[] @relation("LearnerQuizResults")
+
+  parentLinks ParentChild[] @relation("ParentRelation")
+  childLinks  ParentChild[] @relation("ChildRelation")
+}
+
+model ParentChild {
+  id       String @id @default(cuid())
+
+  parentId String
+  childId  String
+
+  parent User @relation("ParentRelation", fields: [parentId], references: [id])
+  child  User @relation("ChildRelation", fields: [childId], references: [id])
+
+  @@unique([parentId, childId])
+}
+
+model Course {
+  id          String      @id @default(cuid())
+  title       String
+  description String
+  category    String
+  level       CourseLevel @default(BEGINNER)
+  imageUrl    String?
+  price       Float      @default(0)
+  isPublished Boolean    @default(true)
+
+  instructorId String?
+  instructor   User? @relation("InstructorCourses", fields: [instructorId], references: [id])
+
+  lessons     Lesson[]
+  quizzes     Quiz[]
+  enrollments Enrollment[]
+  progress    Progress[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Lesson {
+  id        String   @id @default(cuid())
+  title     String
+  content   String
+  videoUrl  String?
+  order     Int
+  duration  Int?
+
+  courseId String
+  course   Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  progress Progress[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Enrollment {
+  id        String   @id @default(cuid())
+
+  learnerId String
+  courseId  String
+
+  learner User   @relation("LearnerEnrollments", fields: [learnerId], references: [id])
+  course  Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  enrolledAt DateTime @default(now())
+
+  @@unique([learnerId, courseId])
+}
+
+model Progress {
+  id          String   @id @default(cuid())
+
+  learnerId String
+  courseId  String
+  lessonId  String
+
+  learner User   @relation("LearnerProgress", fields: [learnerId], references: [id])
+  course  Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  lesson  Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  isCompleted Boolean  @default(false)
+  completedAt DateTime?
+
+  @@unique([learnerId, lessonId])
+}
+
+model Quiz {
+  id          String @id @default(cuid())
+  title       String
+  description String?
+
+  courseId String
+  course   Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  questions Question[]
+  results   QuizResult[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Question {
+  id            String @id @default(cuid())
+  text          String
+  options       Json
+  correctAnswer String
+  points        Int    @default(1)
+
+  quizId String
+  quiz   Quiz @relation(fields: [quizId], references: [id], onDelete: Cascade)
+}
+
+model QuizResult {
+  id        String   @id @default(cuid())
+
+  learnerId String
+  quizId    String
+
+  learner User @relation("LearnerQuizResults", fields: [learnerId], references: [id])
+  quiz    Quiz @relation(fields: [quizId], references: [id], onDelete: Cascade)
+
+  score       Int
+  totalPoints Int
+  answers     Json
+  submittedAt DateTime @default(now())
+}
