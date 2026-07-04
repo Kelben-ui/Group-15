@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import type { User, UserRole } from './types';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 
 interface AuthStore {
   user: User | null;
@@ -140,75 +141,127 @@ export const useAuthStore = create<AuthStore>((set) => ({
   error: null,
 
   login: async (email: string, password: string) => {
-    set({ isLoading: true, error: null });
-    try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 800));
-      
-      const normalizedEmail = email.toLowerCase();
-      const registeredUsers = getRegisteredUsers();
-      const user = mockUsers[normalizedEmail] || registeredUsers[normalizedEmail];
+  set({
+    isLoading: true,
+    error: null,
+  });
 
-      if (!user) {
-        throw new Error('Invalid email or password. Use a demo account or create an account first.');
-      }
+  try {
+    const response = await fetch(`${API_URL}/auth/login`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        email,
+        password,
+      }),
+    });
 
-      // This is a frontend demo, so password checking is intentionally simplified.
-      // A real app would validate the password through the backend.
-      set({ user, isAuthenticated: true, isLoading: false });
-      localStorage.setItem('authUser', JSON.stringify(user));
-    } catch (error) {
-      set({ 
-        error: error instanceof Error ? error.message : 'Login failed',
-        isLoading: false 
-      });
-      throw error;
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || "Login failed");
     }
-  },
+
+    const user = {
+      ...data.user,
+      role: data.user.role.toLowerCase(),
+      enrolledCourses: data.user.enrolledCourses || [],
+      completedCourses: data.user.completedCourses || [],
+      totalProgress: data.user.totalProgress || 0,
+      learningHours: data.user.learningHours || 0,
+      badges: data.user.badges || [],
+      avatar: data.user.avatarUrl || "👤",
+      createdAt: data.user.createdAt
+        ? new Date(data.user.createdAt)
+        : new Date(),
+    } as User;
+
+    localStorage.setItem("learnbridge_token", data.token);
+    localStorage.setItem("authUser", JSON.stringify(user));
+
+    set({
+      user,
+      isAuthenticated: true,
+      isLoading: false,
+      error: null,
+    });
+  } catch (error) {
+    set({
+      error: error instanceof Error ? error.message : "Login failed",
+      isLoading: false,
+    });
+
+    throw error;
+  }
+},
 
   logout: () => {
     set({ user: null, isAuthenticated: false, error: null });
     localStorage.removeItem('authUser');
   },
 
-  register: async (userData) => {
-    set({ isLoading: true, error: null });
-    try {
-      await new Promise((resolve) => setTimeout(resolve, 900));
+  register: async (userData: Partial<User> & { password: string }) => {
+  set({
+    isLoading: true,
+    error: null,
+  });
 
-      const normalizedEmail = (userData.email || '').toLowerCase().trim();
-      if (!userData.name?.trim()) {
-        throw new Error('Full name is required');
-      }
-      if (!normalizedEmail) {
-        throw new Error('Email is required');
-      }
-      if (!userData.password || userData.password.length < 6) {
-        throw new Error('Password must be at least 6 characters');
-      }
+  try {
+    const response = await fetch(`${API_URL}/auth/register`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        name: userData.name,
+        email: userData.email,
+        password: userData.password,
+        role: (userData.role || "learner").toUpperCase(),
+      }),
+    });
 
-      const registeredUsers = getRegisteredUsers();
-      if (mockUsers[normalizedEmail] || registeredUsers[normalizedEmail]) {
-        throw new Error('An account with this email already exists');
-      }
-      
-      const newUser = buildUserForRole({ ...userData, email: normalizedEmail });
-      const updatedUsers = {
-        ...registeredUsers,
-        [normalizedEmail]: newUser,
-      };
+    const data = await response.json();
 
-      saveRegisteredUsers(updatedUsers);
-      set({ user: newUser, isAuthenticated: true, isLoading: false });
-      localStorage.setItem('authUser', JSON.stringify(newUser));
-    } catch (error) {
-      set({ 
-        error: error instanceof Error ? error.message : 'Registration failed',
-        isLoading: false 
-      });
-      throw error;
+    if (!response.ok) {
+      throw new Error(data.message || "Registration failed");
     }
-  },
+
+    const role = data.user.role.toLowerCase() as UserRole;
+
+    const newUser = {
+      ...data.user,
+      role,
+      avatar: data.user.avatarUrl || "👤",
+      enrolledCourses: data.user.enrolledCourses || [],
+      completedCourses: data.user.completedCourses || [],
+      totalProgress: data.user.totalProgress || 0,
+      learningHours: data.user.learningHours || 0,
+      badges: data.user.badges || [],
+      createdAt: data.user.createdAt
+        ? new Date(data.user.createdAt)
+        : new Date(),
+    } as User;
+
+    localStorage.setItem("learnbridge_token", data.token);
+    localStorage.setItem("authUser", JSON.stringify(newUser));
+
+    set({
+      user: newUser,
+      isAuthenticated: true,
+      isLoading: false,
+      error: null,
+    });
+  } catch (error) {
+    set({
+      error: error instanceof Error ? error.message : "Registration failed",
+      isLoading: false,
+    });
+
+    throw error;
+  }
+},
 
   setUser: (user) => {
     set({ user, isAuthenticated: user !== null });
