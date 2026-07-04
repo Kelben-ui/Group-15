@@ -1,10 +1,9 @@
+import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ProgressBar } from '@/components/ui/progress-bar';
 import { Avatar } from '@/components/ui/avatar';
-import { apiRequest } from "@/src/api/api";
-import React, { useEffect, useState } from "react";
 import {
   BookOpen,
   Download,
@@ -22,50 +21,6 @@ import {
 import { courses, liveSessions, modules, progressSummary, quizzes } from '@/lib/demo-data';
 
 export function LearnerHomePage({ onNavigate }: { onNavigate: (page: string) => void }) {
-  const [dashboard, setDashboard] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-  useEffect(() => {
-    async function loadDashboard() {
-      try {
-        setLoading(true);
-        setError("");
-
-        const data = await apiRequest("/dashboard/learner");
-
-        setDashboard(data.dashboard);
-      } catch (err: any) {
-        setError(err.message || "Failed to load learner dashboard");
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    loadDashboard();
-  }, []);
-  if (loading) {
-    return (
-      <div className="space-y-6">
-        <PageHeader
-          title="Learner Dashboard"
-          subtitle="Loading your dashboard from the backend..."
-        />
-        <p className="text-muted-foreground">Loading dashboard...</p>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="space-y-6">
-        <PageHeader
-          title="Learner Dashboard"
-          subtitle="Unable to load your dashboard"
-        />
-        <p className="text-red-600">Error: {error}</p>
-      </div>
-    );
-  }
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
@@ -96,44 +51,6 @@ export function LearnerHomePage({ onNavigate }: { onNavigate: (page: string) => 
         </Card>
       </div>
 
-<div className="grid grid-cols-1 gap-4 md:grid-cols-4">
-  <Card>
-    <CardContent className="p-5">
-      <p className="text-sm text-muted-foreground">Enrolled Courses</p>
-      <h3 className="mt-2 text-2xl font-bold">
-        {dashboard?.totalCourses || 0}
-      </h3>
-    </CardContent>
-  </Card>
-
-  <Card>
-    <CardContent className="p-5">
-      <p className="text-sm text-muted-foreground">Total Lessons</p>
-      <h3 className="mt-2 text-2xl font-bold">
-        {dashboard?.totalLessons || 0}
-      </h3>
-    </CardContent>
-  </Card>
-
-  <Card>
-    <CardContent className="p-5">
-      <p className="text-sm text-muted-foreground">Completed Lessons</p>
-      <h3 className="mt-2 text-2xl font-bold">
-        {dashboard?.completedLessons || 0}
-      </h3>
-    </CardContent>
-  </Card>
-
-  <Card>
-    <CardContent className="p-5">
-      <p className="text-sm text-muted-foreground">Progress</p>
-      <h3 className="mt-2 text-2xl font-bold">
-        {dashboard?.progressPercentage || 0}%
-      </h3>
-    </CardContent>
-  </Card>
-</div>
-
       <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
         <QuickAction icon={BookOpen} label="Browse Courses" onClick={() => onNavigate('courses')} />
         <QuickAction icon={Download} label="Downloads" onClick={() => onNavigate('downloads')} />
@@ -148,49 +65,10 @@ export function LearnerHomePage({ onNavigate }: { onNavigate: (page: string) => 
             <Button size="sm" onClick={() => onNavigate('courses')}>View all</Button>
           </CardHeader>
           <CardContent className="space-y-4">
-  {dashboard?.enrolledCourses?.length > 0 ? (
-    dashboard.enrolledCourses.slice(0, 3).map((course: any) => (
-      <Card key={course.id} hover>
-        <CardContent className="p-4 space-y-2">
-          <Badge variant="info">{course.category}</Badge>
-
-          <h3 className="font-bold text-foreground">
-            {course.title}
-          </h3>
-
-          <p className="text-sm text-muted-foreground">
-            {course.description}
-          </p>
-
-          <div className="flex justify-between text-xs text-muted-foreground">
-            <span>Level: {course.level}</span>
-            <span>Lessons: {course.lessons?.length || 0}</span>
-          </div>
-
-          <Button
-            className="w-full"
-            onClick={() => onNavigate("adaptive-content")}
-          >
-            Continue Course
-          </Button>
-        </CardContent>
-      </Card>
-    ))
-  ) : (
-    <div className="rounded-lg border border-border p-4">
-      <p className="text-sm text-muted-foreground">
-        You are not enrolled in any course yet.
-      </p>
-
-      <Button
-        className="mt-3"
-        onClick={() => onNavigate("courses")}
-      >
-        Browse Courses
-      </Button>
-    </div>
-  )}
-</CardContent>
+            {courses.slice(0, 3).map((course) => (
+              <CourseRow key={course.id} course={course} onOpen={() => onNavigate('adaptive-content')} />
+            ))}
+          </CardContent>
         </Card>
 
         <Card>
@@ -198,26 +76,11 @@ export function LearnerHomePage({ onNavigate }: { onNavigate: (page: string) => 
             <CardTitle>Recent activity</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-           {dashboard?.recentQuizResults?.length > 0 ? (
-  dashboard.recentQuizResults.map((result: any) => (
-    <div
-      key={result.id}
-      className="rounded-lg border border-border bg-muted/30 p-3 text-sm"
-    >
-      <p className="font-medium">
-        {result.quiz?.title || "Quiz completed"}
-      </p>
-
-      <p className="text-muted-foreground">
-        Score: {result.score}/{result.totalPoints}
-      </p>
-    </div>
-  ))
-) : (
-  <div className="rounded-lg border border-border bg-muted/30 p-3 text-sm text-muted-foreground">
-    No recent quiz activity yet.
-  </div>
-)}
+            {progressSummary.recentActivity.map((activity) => (
+              <div key={activity} className="rounded-lg border border-border bg-muted/30 p-3 text-sm text-foreground">
+                {activity}
+              </div>
+            ))}
           </CardContent>
         </Card>
       </div>
@@ -225,135 +88,30 @@ export function LearnerHomePage({ onNavigate }: { onNavigate: (page: string) => 
   );
 }
 
-export function CourseCatalogPage({
-  onNavigate,
-}: {
-  onNavigate: (page: string) => void;
-}) {
-  const [backendCourses, setBackendCourses] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-
-  useEffect(() => {
-    async function loadCourses() {
-      try {
-        setLoading(true);
-        setError("");
-
-        const data = await apiRequest("/courses");
-
-        setBackendCourses(data.courses || []);
-      } catch (err: any) {
-        setError(err.message || "Failed to load courses");
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    loadCourses();
-  }, []);
-
-  async function enrollInCourse(courseId: string) {
-    try {
-      const data = await apiRequest(`/courses/${courseId}/enroll`, {
-        method: "POST",
-      });
-
-      alert(data.message || "Enrollment successful");
-    } catch (err: any) {
-      alert(err.message || "Enrollment failed");
-    }
-  }
-
-  if (loading) {
-    return (
-      <div className="space-y-6">
-        <PageHeader
-          title="Browse Courses"
-          subtitle="Loading courses from the backend..."
-        />
-        <p className="text-muted-foreground">Loading courses...</p>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="space-y-6">
-        <PageHeader title="Browse Courses" subtitle="Unable to load courses" />
-        <p className="text-red-600">Error: {error}</p>
-      </div>
-    );
-  }
-
+export function CourseCatalogPage({ onNavigate }: { onNavigate: (page: string) => void }) {
   return (
     <div className="space-y-6">
-      <PageHeader
-        title="Browse Courses"
-        subtitle="A catalogue-first setup: learners select what they want to study."
-      />
-
+      <PageHeader title="Browse Courses" subtitle="A catalogue-first setup: learners select what they want before entering a module." />
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-        {backendCourses.map((course) => (
+        {courses.map((course) => (
           <Card key={course.id} hover>
             <CardContent className="p-6 space-y-4">
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <Badge variant="info">{course.category}</Badge>
-
-                  <h3 className="mt-3 text-lg font-bold text-foreground">
-                    {course.title}
-                  </h3>
-
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    {course.description}
-                  </p>
+                  <h3 className="mt-3 text-lg font-bold text-foreground">{course.title}</h3>
+                  <p className="mt-1 text-sm text-muted-foreground">{course.description}</p>
                 </div>
+                {course.offlineReady && <Badge variant="success">Offline</Badge>}
               </div>
-
-              <div className="space-y-2 text-xs">
-                <div className="flex justify-between">
-                  <span>Level</span>
-                  <span>{course.level}</span>
-                </div>
-
-                <div className="flex justify-between">
-                  <span>Lessons</span>
-                  <span>{course._count?.lessons || course.lessons?.length || 0}</span>
-                </div>
-
-                <div className="flex justify-between">
-                  <span>Students</span>
-                  <span>{course._count?.enrollments || 0}</span>
-                </div>
-
-                <div className="flex justify-between">
-                  <span>Instructor</span>
-                  <span>{course.instructor?.name || "Not assigned"}</span>
-                </div>
-
-                <div className="flex justify-between">
-                  <span>Price</span>
-                  <span>{course.price === 0 ? "Free" : `$${course.price}`}</span>
-                </div>
+              <div className="space-y-2">
+                <div className="flex justify-between text-xs"><span>Progress</span><span>{course.progress}%</span></div>
+                <ProgressBar value={course.progress} variant="success" />
               </div>
-
-              <div className="flex gap-2">
-                <Button
-                  className="w-full"
-                  onClick={() => onNavigate("adaptive-content")}
-                >
-                  Open Course
-                </Button>
-
-                <Button
-                  className="w-full"
-                  variant="outline"
-                  onClick={() => enrollInCourse(course.id)}
-                >
-                  Enroll
-                </Button>
+              <div className="flex flex-wrap gap-2">
+                {course.format.map((format) => <Badge key={format} variant="default">{format}</Badge>)}
               </div>
+              <Button className="w-full" onClick={() => onNavigate('adaptive-content')}>Open course</Button>
             </CardContent>
           </Card>
         ))}

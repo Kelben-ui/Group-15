@@ -1,0 +1,32 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper: is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Helper: matches user ID
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+
+    // User profiles rules
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      allow create, delete: if isAuthenticated() && request.auth.token.role == "admin";
+      allow update: if isAuthenticated() && (request.auth.token.role == "admin" || request.auth.uid == userId);
+    }
+
+    // Lessons rules
+    match /lessons/{lessonId} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated() && (request.auth.token.role == "instructor" || request.auth.token.role == "admin");
+    }
+
+    // Chats rules
+    match /chats/{chatId} {
+      allow read, write: if isAuthenticated() && (request.resource.data.userId == request.auth.uid || resource.data.userId == request.auth.uid);
+    }
+  }
+}

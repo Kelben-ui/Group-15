@@ -1,0 +1,61 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "Represents a student, instructor, or admin user profile",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique identifier for the user" },
+        "name": { "type": "string", "description": "Full name of the user" },
+        "matricule": { "type": "string", "description": "University Matricule ID or staff ID" },
+        "role": { "type": "string", "enum": ["student", "instructor", "admin"], "description": "User ecosystem role" },
+        "email": { "type": "string", "description": "University email address" },
+        "lastActive": { "type": "string", "description": "Timestamp of last active login session" },
+        "attendanceRate": { "type": "number", "description": "Simulated attendance rate percentage" },
+        "progressRate": { "type": "number", "description": "Simulated overall module progress percentage" }
+      },
+      "required": ["id", "name", "matricule", "role", "email"]
+    },
+    "Lesson": {
+      "title": "Lesson",
+      "description": "Represents a course module or learning curriculum unit",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique module identifier" },
+        "title": { "type": "string", "description": "Title of the curriculum module" },
+        "code": { "type": "string", "description": "Course code (e.g., CEF440)" },
+        "description": { "type": "string", "description": "Long-form description of the unit" },
+        "instructorName": { "type": "string", "description": "Name of publishing instructor" },
+        "progress": { "type": "number", "description": "Percentage progress completed by the current active student" },
+        "isCachedOffline": { "type": "boolean", "description": "Whether the module material is downloaded to local client storage" }
+      },
+      "required": ["id", "title", "code", "description"]
+    },
+    "Chat": {
+      "title": "Chat",
+      "description": "A single interaction message record in Ada AI Coach conversation history",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "description": "ID of the student user" },
+        "sender": { "type": "string", "enum": ["user", "bot"], "description": "Sender of the chat message" },
+        "text": { "type": "string", "description": "Text content of the message" },
+        "timestamp": { "type": "string", "format": "date-time", "description": "Date-time when the message was sent" }
+      },
+      "required": ["userId", "sender", "text", "timestamp"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "Collection of all authorized student and staff credentials"
+    },
+    "/lessons/{lessonId}": {
+      "schema": "Lesson",
+      "description": "Curriculum units and study modules published by instructors"
+    },
+    "/chats/{chatId}": {
+      "schema": "Chat",
+      "description": "Audit trails and conversation thread histories for the Ada AI Coach"
+    }
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "name": "LearnBridge",
+  "description": "A modern, highly resilient educational ecosystem bridging students, instructors, and administrators in low-resource settings with mobile/desktop portals and intelligent coaching.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
